@@ -1,32 +1,57 @@
 #include <ESP8266WiFi.h>
 
+// wifi config
 const char *ssid = "wifi_name";
 const char *password = "wifi_password";
+
+// ip config
+IPAddress localIP(192, 168, 1, 185);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 0, 0);
+IPAddress primaryDNS(8, 8, 8, 8);   //optional
+IPAddress secondaryDNS(8, 8, 4, 4); //optional
+
+// host config
+const char *hostIP = "192.168.1.184";
+const int hostPin = 5;
 
 void setup() {
     Serial.begin(115200);
     delay(10);
 
+    // Configures static IP address
+    if (!WiFi.config(localIP, gateway, subnet, primaryDNS, secondaryDNS)) {
+        Serial.println("STA Failed to configure");
+    }
+
     // Explicitly set the ESP8266 to be a WiFi-client
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
+    // Wifi try to connect
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
+        Serial.print(".");
     }
+
+    // Print local IP address and start web server
+    Serial.println("");
+    Serial.println("WiFi connected.");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
 }
 
 void loop() {
     // Turn on pin 5
-    remoteCall("192.168.1.184", 5, true);
-
-    delay(5000);
+    remoteCall(hostIP, hostPin, true);
+    delay(3000);
 
     // Turn off pin 5
-    remoteCall("192.168.1.184", 5, false);
+    remoteCall(hostIP, hostPin, false);
+    delay(3000);
 }
 
-void remoteCall(char *host, int pin, bool status) {
+void remoteCall(const char *host, int pin, bool status) {
     // Use WiFiClient class to create TCP connections
     WiFiClient client;
     const int httpPort = 80;
@@ -54,9 +79,9 @@ void remoteCall(char *host, int pin, bool status) {
     unsigned long timeout = millis();
     while (client.available() == 0) {
         if (millis() - timeout > 5000) {
-        Serial.println(">>> Client Timeout !");
-        client.stop();
-        return;
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return;
         }
     }
 }
