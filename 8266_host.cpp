@@ -18,7 +18,7 @@ IPAddress secondaryDNS(8, 8, 4, 4); //optional
 void handleOn() {
     if (server.hasArg("pin")) {
         int pin = server.arg("pin").toInt();
-        digitalWrite(pin, 1);
+        digitalWrite(pin, HIGH);
         server.send(200, "text/html", "Turned On");
     }
 }
@@ -26,13 +26,14 @@ void handleOn() {
 void handleOff() {
     if (server.hasArg("pin")) {
         int pin = server.arg("pin").toInt();
-        digitalWrite(pin, 0);
+        digitalWrite(pin, LOW);
         server.send(200, "text/html", "Turn Off");
     }
 }
 
 void setup() {
     delay(1000);
+    Serial.begin(115200);
     pinMode(output5, OUTPUT);
     digitalWrite(output5, LOW);
 
